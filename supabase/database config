@@ -1,0 +1,74 @@
+-- Create businesses table
+CREATE TABLE public.businesses (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('Salon', 'Barbershop', 'Eatery')),
+  address TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  rating DECIMAL(2,1) DEFAULT 0.0,
+  loyalty_type TEXT NOT NULL CHECK (loyalty_type IN ('Visit-based', 'Points-based')),
+  reward_threshold INTEGER NOT NULL,
+  next_reward TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- Create customers table
+CREATE TABLE public.customers (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  phone TEXT NOT NULL UNIQUE,
+  name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- Create customer_loyalty table to track loyalty progress per business
+CREATE TABLE public.customer_loyalty (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  customer_id UUID REFERENCES public.customers(id) ON DELETE CASCADE NOT NULL,
+  business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE NOT NULL,
+  current_visits INTEGER DEFAULT 0,
+  current_points INTEGER DEFAULT 0,
+  total_visits INTEGER DEFAULT 0,
+  total_points INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  UNIQUE(customer_id, business_id)
+);
+
+-- Create transactions table to track check-ins and rewards
+CREATE TABLE public.transactions (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  customer_id UUID REFERENCES public.customers(id) ON DELETE CASCADE NOT NULL,
+  business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('check-in', 'reward_claimed')),
+  points_earned INTEGER DEFAULT 0,
+  visits_added INTEGER DEFAULT 1,
+  reward_claimed TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- Insert sample businesses
+INSERT INTO public.businesses (name, type, address, phone, rating, loyalty_type, reward_threshold, next_reward) VALUES
+('Bella''s Hair Studio', 'Salon', '123 Main St, Downtown', '(555) 123-4567', 4.8, 'Visit-based', 10, 'Free haircut'),
+('Tony''s Barbershop', 'Barbershop', '456 Oak Ave, Midtown', '(555) 234-5678', 4.9, 'Points-based', 500, '$20 off service'),
+('Mama Rosa''s Café', 'Eatery', '789 Pine St, Historic District', '(555) 345-6789', 4.7, 'Visit-based', 8, 'Free lunch combo');
+
+-- Enable Row Level Security (for future auth implementation)
+ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.customer_loyalty ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+
+-- Create policies to allow public read access for now (can be restricted later)
+CREATE POLICY "Allow public read access to businesses" ON public.businesses FOR SELECT USING (true);
+CREATE POLICY "Allow public read access to customers" ON public.customers FOR SELECT USING (true);
+CREATE POLICY "Allow public read access to customer_loyalty" ON public.customer_loyalty FOR SELECT USING (true);
+CREATE POLICY "Allow public read access to transactions" ON public.transactions FOR SELECT USING (true);
+
+-- Allow public insert/update for customer operations
+CREATE POLICY "Allow public insert customers" ON public.customers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update customers" ON public.customers FOR UPDATE USING (true);
+CREATE POLICY "Allow public insert customer_loyalty" ON public.customer_loyalty FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update customer_loyalty" ON public.customer_loyalty FOR UPDATE USING (true);
+CREATE POLICY "Allow public insert transactions" ON public.transactions FOR INSERT WITH CHECK (true);
