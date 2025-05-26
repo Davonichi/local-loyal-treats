@@ -8,20 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, Gift, CheckCircle, QrCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Business {
-  id: number;
-  name: string;
-  type: string;
-  address: string;
-  phone: string;
-  rating: number;
-  loyaltyType: string;
-  rewardThreshold: number;
-  currentVisits?: number;
-  currentPoints?: number;
-  nextReward: string;
-}
+import { useCheckIn } from "@/hooks/useCustomerLoyalty";
+import { Business } from "@/hooks/useBusinesses";
 
 interface CustomerCheckInProps {
   businesses: Business[];
@@ -32,8 +20,9 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
   const [selectedBusiness, setSelectedBusiness] = useState("");
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const { toast } = useToast();
+  const checkInMutation = useCheckIn();
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
     if (!phoneNumber || !selectedBusiness) {
       toast({
         title: "Missing Information",
@@ -43,19 +32,32 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
       return;
     }
 
-    // Simulate check-in process
-    setIsCheckedIn(true);
-    toast({
-      title: "Check-in Successful! 🎉",
-      description: "You've earned loyalty points for this visit.",
-    });
+    try {
+      await checkInMutation.mutateAsync({
+        phoneNumber,
+        businessId: selectedBusiness,
+      });
 
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsCheckedIn(false);
-      setPhoneNumber("");
-      setSelectedBusiness("");
-    }, 3000);
+      setIsCheckedIn(true);
+      toast({
+        title: "Check-in Successful! 🎉",
+        description: "You've earned loyalty points for this visit.",
+      });
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setIsCheckedIn(false);
+        setPhoneNumber("");
+        setSelectedBusiness("");
+      }, 3000);
+    } catch (error) {
+      console.error('Check-in error:', error);
+      toast({
+        title: "Check-in Failed",
+        description: "There was an error processing your check-in. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -74,7 +76,7 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
     setPhoneNumber(formatted);
   };
 
-  const selectedBusinessData = businesses.find(b => b.id.toString() === selectedBusiness);
+  const selectedBusinessData = businesses.find(b => b.id === selectedBusiness);
 
   return (
     <div className="space-y-6">
@@ -114,7 +116,7 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     {businesses.map((business) => (
-                      <SelectItem key={business.id} value={business.id.toString()}>
+                      <SelectItem key={business.id} value={business.id}>
                         <div className="flex items-center space-x-2">
                           <span>{business.name}</span>
                           <Badge variant="secondary" className="text-xs">
@@ -141,10 +143,10 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
                       </div>
                       <div className="text-right">
                         <Badge className="bg-orange-100 text-orange-700">
-                          {selectedBusinessData.loyaltyType}
+                          {selectedBusinessData.loyalty_type}
                         </Badge>
                         <p className="text-xs text-gray-600 mt-1">
-                          Next: {selectedBusinessData.nextReward}
+                          Next: {selectedBusinessData.next_reward}
                         </p>
                       </div>
                     </div>
@@ -155,11 +157,12 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
               {/* Check-in Button */}
               <Button
                 onClick={handleCheckIn}
+                disabled={checkInMutation.isPending}
                 className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white py-3"
                 size="lg"
               >
                 <Gift className="h-5 w-5 mr-2" />
-                Check In & Earn Rewards
+                {checkInMutation.isPending ? "Checking in..." : "Check In & Earn Rewards"}
               </Button>
 
               {/* Alternative Check-in Methods */}
@@ -183,7 +186,7 @@ export const CustomerCheckIn = ({ businesses }: CustomerCheckInProps) => {
               </p>
               <div className="bg-gradient-to-r from-orange-100 to-pink-100 p-4 rounded-lg">
                 <p className="text-sm font-medium text-gray-800">
-                  {selectedBusinessData?.loyaltyType === "Visit-based" 
+                  {selectedBusinessData?.loyalty_type === "Visit-based" 
                     ? "+1 visit added to your loyalty card" 
                     : "+50 points added to your account"}
                 </p>

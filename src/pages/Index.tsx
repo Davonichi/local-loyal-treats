@@ -8,50 +8,23 @@ import { MapPin, Phone, Star, Gift, Users, TrendingUp } from "lucide-react";
 import { BusinessCard } from "@/components/BusinessCard";
 import { CustomerCheckIn } from "@/components/CustomerCheckIn";
 import { LoyaltyDashboard } from "@/components/LoyaltyDashboard";
+import { useBusinesses } from "@/hooks/useBusinesses";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("discover");
   const [userPhone, setUserPhone] = useState("");
+  const { data: businesses = [], isLoading } = useBusinesses();
 
-  // Mock data for demonstration
-  const businesses = [
-    {
-      id: 1,
-      name: "Bella's Hair Studio",
-      type: "Salon",
-      address: "123 Main St, Downtown",
-      phone: "(555) 123-4567",
-      rating: 4.8,
-      loyaltyType: "Visit-based",
-      rewardThreshold: 10,
-      currentVisits: 7,
-      nextReward: "Free haircut"
-    },
-    {
-      id: 2,
-      name: "Tony's Barbershop",
-      type: "Barbershop",
-      address: "456 Oak Ave, Midtown",
-      phone: "(555) 234-5678",
-      rating: 4.9,
-      loyaltyType: "Points-based",
-      rewardThreshold: 500,
-      currentPoints: 350,
-      nextReward: "$20 off service"
-    },
-    {
-      id: 3,
-      name: "Mama Rosa's Café",
-      type: "Eatery",
-      address: "789 Pine St, Historic District",
-      phone: "(555) 345-6789",
-      rating: 4.7,
-      loyaltyType: "Visit-based",
-      rewardThreshold: 8,
-      currentVisits: 3,
-      nextReward: "Free lunch combo"
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading businesses...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50">

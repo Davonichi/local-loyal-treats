@@ -9,6 +9,123 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      businesses: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          loyalty_type: string
+          name: string
+          next_reward: string
+          phone: string
+          rating: number | null
+          reward_threshold: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          loyalty_type: string
+          name: string
+          next_reward: string
+          phone: string
+          rating?: number | null
+          reward_threshold: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          loyalty_type?: string
+          name?: string
+          next_reward?: string
+          phone?: string
+          rating?: number | null
+          reward_threshold?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      customer_loyalty: {
+        Row: {
+          business_id: string
+          created_at: string
+          current_points: number | null
+          current_visits: number | null
+          customer_id: string
+          id: string
+          total_points: number | null
+          total_visits: number | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          current_points?: number | null
+          current_visits?: number | null
+          customer_id: string
+          id?: string
+          total_points?: number | null
+          total_visits?: number | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          current_points?: number | null
+          current_visits?: number | null
+          customer_id?: string
+          id?: string
+          total_points?: number | null
+          total_visits?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_loyalty_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_loyalty_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       test: {
         Row: {
           age: number | null
@@ -29,6 +146,54 @@ export type Database = {
           user_id?: number
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          business_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          points_earned: number | null
+          reward_claimed: string | null
+          type: string
+          visits_added: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          points_earned?: number | null
+          reward_claimed?: string | null
+          type: string
+          visits_added?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          points_earned?: number | null
+          reward_claimed?: string | null
+          type?: string
+          visits_added?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

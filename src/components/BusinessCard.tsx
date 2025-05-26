@@ -4,20 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Phone, Star, Gift, Clock } from "lucide-react";
-
-interface Business {
-  id: number;
-  name: string;
-  type: string;
-  address: string;
-  phone: string;
-  rating: number;
-  loyaltyType: string;
-  rewardThreshold: number;
-  currentVisits?: number;
-  currentPoints?: number;
-  nextReward: string;
-}
+import { Business } from "@/hooks/useBusinesses";
 
 interface BusinessCardProps {
   business: Business;
@@ -25,20 +12,20 @@ interface BusinessCardProps {
 
 export const BusinessCard = ({ business }: BusinessCardProps) => {
   const getProgressValue = () => {
-    if (business.loyaltyType === "Visit-based" && business.currentVisits) {
-      return (business.currentVisits / business.rewardThreshold) * 100;
+    if (business.loyalty_type === "Visit-based" && business.current_visits) {
+      return (business.current_visits / business.reward_threshold) * 100;
     }
-    if (business.loyaltyType === "Points-based" && business.currentPoints) {
-      return (business.currentPoints / business.rewardThreshold) * 100;
+    if (business.loyalty_type === "Points-based" && business.current_points) {
+      return (business.current_points / business.reward_threshold) * 100;
     }
     return 0;
   };
 
   const getProgressText = () => {
-    if (business.loyaltyType === "Visit-based") {
-      return `${business.currentVisits}/${business.rewardThreshold} visits`;
+    if (business.loyalty_type === "Visit-based") {
+      return `${business.current_visits || 0}/${business.reward_threshold} visits`;
     }
-    return `${business.currentPoints}/${business.rewardThreshold} points`;
+    return `${business.current_points || 0}/${business.reward_threshold} points`;
   };
 
   const getTypeColor = (type: string) => {
@@ -98,7 +85,7 @@ export const BusinessCard = ({ business }: BusinessCardProps) => {
           <Progress value={getProgressValue()} className="h-2" />
           <div className="flex items-center text-sm text-gray-600">
             <Gift className="h-4 w-4 mr-1 text-orange-500" />
-            Next reward: {business.nextReward}
+            Next reward: {business.next_reward}
           </div>
         </div>
 
