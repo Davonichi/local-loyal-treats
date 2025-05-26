@@ -4,20 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Gift, Star, Calendar, TrendingUp, Award, Clock } from "lucide-react";
-
-interface Business {
-  id: number;
-  name: string;
-  type: string;
-  address: string;
-  phone: string;
-  rating: number;
-  loyaltyType: string;
-  rewardThreshold: number;
-  currentVisits?: number;
-  currentPoints?: number;
-  nextReward: string;
-}
+import { Business } from "@/hooks/useBusinesses";
 
 interface LoyaltyDashboardProps {
   businesses: Business[];
@@ -27,18 +14,18 @@ interface LoyaltyDashboardProps {
 export const LoyaltyDashboard = ({ businesses }: LoyaltyDashboardProps) => {
   // Mock user data
   const totalPoints = businesses.reduce((sum, business) => 
-    sum + (business.currentPoints || 0), 0
+    sum + (business.current_points || 0), 0
   );
   
   const totalVisits = businesses.reduce((sum, business) => 
-    sum + (business.currentVisits || 0), 0
+    sum + (business.current_visits || 0), 0
   );
 
   const availableRewards = businesses.filter(business => {
-    if (business.loyaltyType === "Visit-based") {
-      return (business.currentVisits || 0) >= business.rewardThreshold;
+    if (business.loyalty_type === "Visit-based") {
+      return (business.current_visits || 0) >= business.reward_threshold;
     }
-    return (business.currentPoints || 0) >= business.rewardThreshold;
+    return (business.current_points || 0) >= business.reward_threshold;
   });
 
   return (
@@ -111,7 +98,7 @@ export const LoyaltyDashboard = ({ businesses }: LoyaltyDashboardProps) => {
               <div key={business.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-200">
                 <div>
                   <h4 className="font-semibold text-gray-900">{business.name}</h4>
-                  <p className="text-sm text-gray-600">{business.nextReward}</p>
+                  <p className="text-sm text-gray-600">{business.next_reward}</p>
                 </div>
                 <Button size="sm" className="bg-green-600 hover:bg-green-700">
                   Redeem Now
@@ -135,13 +122,13 @@ export const LoyaltyDashboard = ({ businesses }: LoyaltyDashboardProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           {businesses.map((business) => {
-            const progress = business.loyaltyType === "Visit-based" 
-              ? ((business.currentVisits || 0) / business.rewardThreshold) * 100
-              : ((business.currentPoints || 0) / business.rewardThreshold) * 100;
+            const progress = business.loyalty_type === "Visit-based" 
+              ? ((business.current_visits || 0) / business.reward_threshold) * 100
+              : ((business.current_points || 0) / business.reward_threshold) * 100;
               
-            const progressText = business.loyaltyType === "Visit-based"
-              ? `${business.currentVisits}/${business.rewardThreshold} visits`
-              : `${business.currentPoints}/${business.rewardThreshold} points`;
+            const progressText = business.loyalty_type === "Visit-based"
+              ? `${business.current_visits || 0}/${business.reward_threshold} visits`
+              : `${business.current_points || 0}/${business.reward_threshold} points`;
 
             return (
               <div key={business.id} className="space-y-3 p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg">
@@ -161,7 +148,7 @@ export const LoyaltyDashboard = ({ businesses }: LoyaltyDashboardProps) => {
                 <div className="space-y-2">
                   <Progress value={Math.min(progress, 100)} className="h-2" />
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Next reward: {business.nextReward}</span>
+                    <span className="text-gray-600">Next reward: {business.next_reward}</span>
                     <span className="text-gray-500">{Math.round(progress)}%</span>
                   </div>
                 </div>
